@@ -118,34 +118,44 @@ def create_hero_power():
     power = Power.query.get(data['power_id'])
     
     if hero and power:
-        new_hero_power = HeroPower(
-            strength=data['strength'],
-            hero_id=data['hero_id'],
-            power_id=data['power_id']
-        )
-        db.session.add(new_hero_power)
-        db.session.commit()
-        
-        response = {
-            "id": new_hero_power.id,
-            "hero_id": new_hero_power.hero_id,
-            "power_id": new_hero_power.power_id,
-            "strength": new_hero_power.strength,
-            "hero": {
-                "id": hero.id,
-                "name": hero.name,
-                "super_name": hero.super_name
-            },
-            "power": {
-                "id": power.id,
-                "name": power.name,
-                "description": power.description
+        try:
+            new_hero_power = HeroPower(
+                strength=data['strength'],
+                hero_id=data['hero_id'],
+                power_id=data['power_id']
+            )
+            db.session.add(new_hero_power)
+            db.session.commit()
+            
+            response = {
+                "id": new_hero_power.id,
+                "hero_id": new_hero_power.hero_id,
+                "power_id": new_hero_power.power_id,
+                "strength": new_hero_power.strength,
+                "hero": {
+                    "id": hero.id,
+                    "name": hero.name,
+                    "super_name": hero.super_name
+                },
+                "power": {
+                    "id": power.id,
+                    "name": power.name,
+                    "description": power.description
+                }
             }
-        }
-        return make_response(jsonify(response), 201)
+            return make_response(jsonify(response), 200)
+            
+        except Exception as e:
+            db.session.rollback()
+            return make_response(
+                jsonify({"errors": ["validation errors"]}),
+                400
+            )
     else:
-        return make_response(jsonify({"errors": ["validation errors"]}), 400)
-
+        return make_response(
+            jsonify({"errors": ["validation errors"]}),
+            400
+        )
 
 
 
